@@ -11,6 +11,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   pages/changelog
+   
    pages/helloworld
    pages/client
    pages/usermanager
@@ -25,6 +27,8 @@ Contents:
    pages/service
 
    pages/indices_and_tables
+
+
 
 
 Indices and tables
