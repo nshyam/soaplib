@@ -35,15 +35,21 @@ python setup.py install
 
 python setup.py develop
 
+History
+-----------
+.. toctree::
+   :maxdepth: 2
+
+   pages/changelog
+
 
 Examples
 ----------
 
 .. toctree::
    :maxdepth: 2
-
-   pages/helloworld
-   pages/client
+   
+   pages/helloworld   
    pages/usermanager
    pages/type
    pages/binaryfiles
@@ -51,24 +57,39 @@ Examples
    pages/hooks
    pages/apache_axis
 
+
 Model API
 ------------
 .. toctree::
    :maxdepth: 2
 
    pages/model_api
+
+
+Server
+--------
+.. toctree::
+   :maxdepth: 2
+
+   pages/server
+
+
+Client
+---------
+.. toctree::
+   :maxdepth: 2
+
+   pages/client
+
+
+
 SOAP
 ------
 .. toctree::
    :maxdepth: 2
 
    pages/soap
-WSGI
--------
-.. toctree::
-   :maxdepth: 2
 
-   pages/wsgi
 
 Service
 ---------
@@ -77,8 +98,6 @@ Service
    :maxdepth: 2
 
    pages/service
-
-   pages/indices_and_tables
 
 
 Indices and tables
