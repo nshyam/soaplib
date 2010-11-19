@@ -49,9 +49,9 @@ Examples
 .. toctree::
    :maxdepth: 2
    
-   pages/helloworld   
+   pages/helloworld
    pages/usermanager
-   pages/type
+   pages/serializers
    pages/binaryfiles
    pages/message_api
    pages/hooks
