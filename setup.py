@@ -80,7 +80,7 @@ setup(
     install_requires=[
       'setuptools',
       'pytz',
-      'lxml>=2.2.1',
+      'lxml',
     ],
     test_suite='soaplib.core.test',
     test_loader='__main__:NoInteropLoader',

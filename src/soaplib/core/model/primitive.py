@@ -263,7 +263,7 @@ class Duration(SimpleType):
     @classmethod
     @nillable_string
     def from_string(cls, string):
-        from soaplib.util.duration import duration
+        from soaplib.core.util.duration import duration
         return duration.parse(string)
 
 class Double(SimpleType):
