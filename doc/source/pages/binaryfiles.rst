@@ -8,9 +8,11 @@ decoding of the binary data, and provieds some useful methods for dealing with
 both in-memory and on-disk binary data. ::
 
     >>> from soaplib.core.model.binary import Attachment
-    >>> from lxml import etree as et
+    >>> from lxml import etree
     >>> a = Attachment(data="this is my binary data")
-    >>> print et.tostring(Attachment.to_parent_element(a))
+    >>> parent = etree.Element("parent")
+    >>> Attachment.to_parent_element(a, "tns", parent)
+    >>> print et.tostring(parent)
     <ns0:retval xmlns:ns0="tns">bXkgYmluYXJ5IGRhdGE=
     </ns0:retval>
     >>>
@@ -19,8 +21,10 @@ If you want to return file with binary data, simply::
 
     >>> from soaplib.core.model.binary import Attachment
     >>> from lxml import etree as et
-    >>> a = Attachment(fileName="mydata")
-    >>> print et.tostring(Attachment.to_parent_element(a))
+    >>> a = Attachment(file_name="mydata")
+    >>> parent = etree.Element("parent")
+    >>> Attachment.to_parent_element(a, "tns", parent)
+    >>> print et.tostring(parent)
     <ns0:retval xmlns="">dGhpcyBpcyBteSBiaW5hcnkgZGF0YQ==
     </ns0:retval>
     >>>
@@ -47,7 +51,7 @@ An example service for archiving documents::
             fd,fname = mkstemp()
             os.close(fd)
 
-            document.fileName = fname
+            document.file_name = fname
             document.save_to_file()
 
             return fname
@@ -62,7 +66,7 @@ An example service for archiving documents::
             if not os.path.exists(file_path):
                 raise Exception("File [%s] not found"%file_path)
 
-            document = Attachment(fileName=file_path)
+            document = Attachment(file_name=file_path)
             # the service automatically loads the data from the file.
             # alternatively, The data could be manually loaded into memory
             # and loaded into the Attachment like:
