@@ -6,6 +6,8 @@ import os
 import re
 from lxml import etree
 
+from soaplib.core.util.xsd_gen import XSDGenerator
+
 class ClassModelConverter():
     """A class to handle exporting a ClassModel to different representations
 
@@ -27,7 +29,9 @@ class ClassModelConverter():
         @param parent_tag: The tag used for the creation of a root/parent element.
         """
 
-        assert tns or tns !="" , "'tns' should not be None or an empty string"
+        assert tns !="" , "'tns' should not be None or an empty string"
+        if tns is None:
+            raise ValueError("TNS should not be none.")
 
 
         self.instance = model_instance
@@ -35,7 +39,6 @@ class ClassModelConverter():
         self.include_parent= include_parent
         self.parent_tag = parent_tag
         self.include_ns = include_ns
-
 
     def __get_ns_free_element(self, element):
         """ """
@@ -61,11 +64,56 @@ class ClassModelConverter():
         return new_el
 
 
+
+    def _rebuild_root(self, old_root, new_root):
+
+        for child in old_root.iterchildren():
+            new_sub = etree.SubElement(new_root, child.tag)
+            new_sub.text = child.text
+            self._rebuild_root(child, new_sub)
+
+
+    def clean_extra_ns_decs(self, root):
+
+        root_ns_map = root.nsmap
+
+        from collections import defaultdict
+        prefix_by_namespace = defaultdict(list)
+        self._build_defult_prefix_by_namespace(root,prefix_by_namespace)
+
+
+        for ns,prefix in prefix_by_namespace.items():
+            if ns not in root_ns_map.values():
+                print ns, prefix
+                root_ns_map[prefix[0]] = ns
+
+
+        new_root = etree.Element(root.tag, nsmap=root_ns_map)
+
+        self._rebuild_root(root, new_root)
+        return new_root
+
+
+
+    def _build_defult_prefix_by_namespace(self, root, default_dict):
+        dirty_children = [child for child in root.iterchildren()]
+
+
+        if dirty_children:
+            for child in dirty_children:
+                for k,v in child.nsmap.items():
+                    if k not in default_dict[v]:
+                        default_dict[v].append(k)
+
+            for child in dirty_children:
+                self._build_defult_prefix_by_namespace(child, default_dict)
+
+
+
     def __get_etree(self):
         root_element = etree.Element(self.parent_tag)
         self.instance.to_parent_element(self.instance, self.tns, root_element)
 
-        rt_el = None
         if not self.include_parent:
             rt_el = root_element[0]
         else:
@@ -74,7 +122,9 @@ class ClassModelConverter():
         if not self.include_ns:
             rt_el = self.__get_ns_free_element(rt_el)
 
-        return rt_el
+        clean_root = self.clean_extra_ns_decs(rt_el)
+
+        return clean_root
 
 
     def to_etree(self):
@@ -85,10 +135,10 @@ class ClassModelConverter():
         return self.__get_etree()
 
 
+
     def to_xml(self):
         """Returns a xml string from a soaplib.core.model.clazz.ClassModel instance.
         """
-
         el = self.to_etree()
 
         return etree.tostring(

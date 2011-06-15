@@ -194,10 +194,21 @@ class ClassModelBase(Base):
                     for sv in subvalue:
                         v.to_parent_element(sv, cls.get_namespace(), parent, k)
 
-            #TODO: Fix rendering to not include a value if nillable is true and max_occurs == 0 and subvalue is None
+            elif v.Attributes.min_occurs == 0 and subvalue is None :
+                # if a null value is passed to an element with min_occurs = 0
+                # then we need to **NOT** render an empty tag. per
+                # http://www.w3.org/TR/xmlschema-0/
+                pass
 
             # Don't include empty values for non-nillable optional attributes.
             elif subvalue is not None or v.Attributes.nillable or v.Attributes.min_occurs > 0:
+                #TODO: move this ns tag to the parent element...........
+#                print "+++++"
+#                print "subvalue:%s, cls.get_namespace(): %s, k:%s, parent.prefix %s " % (subvalue, cls.get_namespace(), k, parent.prefix)
+
+                ns = cls.get_namespace()
+
+
                 v.to_parent_element(subvalue, cls.get_namespace(), parent, k)
 
     @classmethod
