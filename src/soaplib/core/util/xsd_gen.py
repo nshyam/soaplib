@@ -58,7 +58,7 @@ class XSDGenerator():
 
         return BindingService
 
-    def __get_binding_application(self, binding_service):
+    def __get_binding_application(self, binding_service, model):
         '''Builds an instance of soaplib.Application
 
         The Application built is populated with an instance of a Service Class
@@ -67,7 +67,7 @@ class XSDGenerator():
         '''
 
         binding_application = Application([binding_service],
-                                          'binding_application')
+                                          model.get_namespace())
 
         # The lxml Element nsmap is being overridden to remove the unneeded
         # namespaces
@@ -86,11 +86,8 @@ class XSDGenerator():
         '''
 
         binding_service = self.__get_binding_service(model)
-        app = self.__get_binding_application(binding_service)
+        app = self.__get_binding_application(binding_service, model)
         nodes = app.build_schema(types=None)
-
-        for k,v in nodes.items():
-            nodes[k] = self._clean_imports(v)
 
         return nodes
 
@@ -180,7 +177,7 @@ class XSDGenerator():
         self.model_schema_nsmap[namespace] = prefix
 
 
-    def get_model_xsd(self, model, encoding='utf-8', pretty_print=False, strip_extra_imports=True):
+    def get_model_xsd(self, model, encoding='utf-8', pretty_print=False):
         '''Returns a string representation of an XSD for the specified model.
 
         @param  A soaplib.core.model class that will be represented in the schema.
@@ -192,8 +189,6 @@ class XSDGenerator():
         nodes = self.__get_nodes(model)
         xsd_out = self.__get_model_node(model, nodes)
 
-        if strip_extra_imports:
-            xsd_out = self._clean_imports(xsd_out)
 
         return etree.tostring(
             xsd_out,

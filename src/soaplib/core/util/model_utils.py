@@ -1,10 +1,14 @@
 """Utility classes and methods for converting and validating
 soaplib.core.model.ClassModel instances
 """
+from _collections import defaultdict
+import shutil
+import tempfile
 
 import os
 import re
 from lxml import etree
+from soaplib.core import namespaces
 
 from soaplib.core.util.xsd_gen import XSDGenerator
 
@@ -19,26 +23,25 @@ class ClassModelConverter():
     ClassModel API.
     """
 
-    def __init__(self, model_instance, tns, include_parent=False, parent_tag="root", include_ns=True):
+    xml_instance_ns_map = {
+        'xs': namespaces.ns_xsd,
+        'xsi': namespaces.ns_xsi,
+        }
+
+    def __init__(self, model_instance, include_parent=False, parent_tag="root", include_ns=True):
         """
         @param model_instance: An instance of a soaplib.core.model.clazz.ClassModel
-        @parma tns:The target namespace of the model instance.
         @param include_parent: Indicates if a parent element should be returned as the root
         element of the xml representation.  If true, a root element will be included with
         the tag "parent_tag"
         @param parent_tag: The tag used for the creation of a root/parent element.
         """
 
-        assert tns !="" , "'tns' should not be None or an empty string"
-        if tns is None:
-            raise ValueError("TNS should not be none.")
-
-
         self.instance = model_instance
-        self.tns = tns
         self.include_parent= include_parent
         self.parent_tag = parent_tag
         self.include_ns = include_ns
+        self.prefix_by_namespace = defaultdict(list)
 
     def __get_ns_free_element(self, element):
         """ """
@@ -65,6 +68,20 @@ class ClassModelConverter():
 
 
 
+    def _get_xsd_import_name(self):
+        """Returns the name of the documents xsd for building the correct
+        schemaLocation statement
+        """
+        gen = XSDGenerator()
+        tmp_dir_name = tempfile.mkdtemp()
+        file_name = gen.write_model_xsd_file(self.instance.__class__, tmp_dir_name)
+        shutil.rmtree(tmp_dir_name)
+
+
+        return os.path.basename(file_name)
+
+
+
     def _rebuild_root(self, old_root, new_root):
 
         for child in old_root.iterchildren():
@@ -73,41 +90,42 @@ class ClassModelConverter():
             self._rebuild_root(child, new_sub)
 
 
-    def clean_extra_ns_decs(self, root):
+    def _simplify_imports(self, root):
 
         root_ns_map = root.nsmap
+        for prefix, ns in ClassModelConverter.xml_instance_ns_map.items():
+            root_ns_map[prefix] = ns
 
-        from collections import defaultdict
-        prefix_by_namespace = defaultdict(list)
-        self._build_defult_prefix_by_namespace(root,prefix_by_namespace)
+        self._build_defult_prefix_by_namespace(root)
 
 
-        for ns,prefix in prefix_by_namespace.items():
+        for ns,prefix in self.prefix_by_namespace.items():
             if ns not in root_ns_map.values():
                 root_ns_map[prefix[0]] = ns
 
         new_root = etree.Element(root.tag, nsmap=root_ns_map, attrib=root.attrib)
         self._rebuild_root(root, new_root)
+
         return new_root
 
-    def _build_defult_prefix_by_namespace(self, root, default_dict):
-        dirty_children = [child for child in root.iterchildren()]
 
+    def _build_defult_prefix_by_namespace(self, root):
+        dirty_children = [child for child in root.iterchildren()]
 
         if dirty_children:
             for child in dirty_children:
-                for k,v in child.nsmap.items():
-                    if k not in default_dict[v]:
-                        default_dict[v].append(k)
+                for prefix,namespace in child.nsmap.items():
+                    if prefix not in self.prefix_by_namespace[namespace]:
+                        self.prefix_by_namespace[namespace].append(prefix)
 
             for child in dirty_children:
-                self._build_defult_prefix_by_namespace(child, default_dict)
+                self._build_defult_prefix_by_namespace(child)
 
 
 
     def __get_etree(self):
         root_element = etree.Element(self.parent_tag)
-        self.instance.to_parent_element(self.instance, self.tns, root_element)
+        self.instance.to_parent_element(self.instance, self.instance.get_namespace(), root_element)
 
         if not self.include_parent:
             rt_el = root_element[0]
@@ -117,7 +135,10 @@ class ClassModelConverter():
         if not self.include_ns:
             rt_el = self.__get_ns_free_element(rt_el)
 
-        clean_root = self.clean_extra_ns_decs(rt_el)
+        clean_root = self._simplify_imports(rt_el)
+        root_ns_prefix = self.prefix_by_namespace[self.instance.get_namespace()][0]
+        schema_location = "%s file%s" % (root_ns_prefix ,self._get_xsd_import_name())
+        clean_root.set("{%s}%s" % (namespaces.ns_xsi, "schemaLocation"), schema_location)
 
         return clean_root
 
