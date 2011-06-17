@@ -95,7 +95,7 @@ Quick Start Examples
 
 Model API
 ---------
-The soaplib.model API provides an elegant way of declaring within Python classes
+The soaplib.core.model API provides an elegant way of declaring within Python classes
 the XML Schema (W3C) elements which make up a WSDL. This can also be used to
 produce generic XSD for non-SOAP applications.
 

@@ -19,7 +19,7 @@
 
 import soaplib
 
-from soaplib.util.wsgi_wrapper import run_twisted
+from soaplib.core.util.wsgi_wrapper import run_twisted
 from soaplib.server import wsgi
 from soaplib.core.service import DefinitionBase
 from soaplib.core.service import soap
