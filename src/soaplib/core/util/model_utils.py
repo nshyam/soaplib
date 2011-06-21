@@ -137,7 +137,7 @@ class ClassModelConverter():
 
         clean_root = self._simplify_imports(rt_el)
         root_ns_prefix = self.prefix_by_namespace[self.instance.get_namespace()][0]
-        schema_location = "%s file%s" % (root_ns_prefix ,self._get_xsd_import_name())
+        schema_location = "%s file:%s" % (root_ns_prefix ,self._get_xsd_import_name())
         clean_root.set("{%s}%s" % (namespaces.ns_xsi, "schemaLocation"), schema_location)
 
         return clean_root
