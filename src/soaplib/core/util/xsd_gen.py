@@ -42,6 +42,10 @@ class XSDGenerator():
     __el_string = '{%s}element' % namespaces.ns_xsd
     __imp_string = '{%s}import' % namespaces.ns_xsd
 
+    def __init__(self, custom_ns_map=None):
+        
+        self.custom_map = custom_ns_map
+
     def __get_binding_service(self, model):
         """A factory method to create a simple service class.
 
@@ -78,6 +82,11 @@ class XSDGenerator():
 
         binding_application.call_routes = {}
 
+        if self.custom_map:
+            for prefix, namespace in self.custom_map.items():
+                binding_application.set_namespace_prefix(namespace, prefix)
+
+
         return binding_application
 
     def __get_nodes(self, model):
@@ -87,8 +96,8 @@ class XSDGenerator():
         """
 
         binding_service = self.__get_binding_service(model)
-        app = self.__get_binding_application(binding_service, model)
-        nodes = app.build_schema(types=None)
+        self.app = self.__get_binding_application(binding_service, model)
+        nodes = self.app.build_schema(types=None)
 
         return nodes
 
@@ -116,11 +125,16 @@ class XSDGenerator():
 
         file_prefix = None
 
-        for el in model_node.iterfind(XSDGenerator.__el_string):
-            if el.attrib['type'].find(model.get_type_name()) !=-1:
-                marker = el.attrib['type'].find(':')
-                file_prefix = el.attrib['type'][:marker]
-                break
+
+        file_prefix = model.get_namespace_prefix(self.app)
+        print "ososososos"
+        print file_prefix
+
+#        for el in model_node.iterfind(XSDGenerator.__el_string):
+#            if el.attrib['type'].find(model.get_type_name()) !=-1:
+#                marker = el.attrib['type'].find(':')
+#                file_prefix = el.attrib['type'][:marker]
+#                break
 
 
         if file_prefix is None:
