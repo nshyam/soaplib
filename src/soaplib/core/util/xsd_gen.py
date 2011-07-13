@@ -99,6 +99,9 @@ class XSDGenerator():
         self.app = self.__get_binding_application(binding_service, model)
         nodes = self.app.build_schema(types=None)
 
+        for node in nodes.values():
+            self._clean_imports(node)
+
         return nodes
 
     def __get_model_node(self, model, nodes):
@@ -127,15 +130,6 @@ class XSDGenerator():
 
 
         file_prefix = model.get_namespace_prefix(self.app)
-        print "ososososos"
-        print file_prefix
-
-#        for el in model_node.iterfind(XSDGenerator.__el_string):
-#            if el.attrib['type'].find(model.get_type_name()) !=-1:
-#                marker = el.attrib['type'].find(':')
-#                file_prefix = el.attrib['type'][:marker]
-#                break
-
 
         if file_prefix is None:
             raise ValueError('Unable to set the file prefix')
