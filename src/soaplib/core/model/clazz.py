@@ -178,7 +178,7 @@ class ClassModelBase(Base):
         if parent_cls :
             parent_cls.get_members(inst, parent)
 
-        for k, v in cls._type_info.items():
+        for k,v in sorted(cls._type_info.items(), key=lambda (k,v): (v.creation_counter, k)):
 
             subvalue = getattr(inst, k, None)
 
@@ -299,7 +299,7 @@ class ClassModelBase(Base):
             sequence = etree.SubElement(sequence_parent, '{%s}sequence' %
                                                                 namespaces.ns_xsd)
 
-            for k, v in cls._type_info.items():
+            for k, v in sorted(cls._type_info.items(), key=lambda (k, v): (v.creation_counter, k)):
 
                 if isinstance(v, XMLAttribute):
                     attribute = etree.SubElement(complex_type,

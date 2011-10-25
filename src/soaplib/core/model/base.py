@@ -60,6 +60,9 @@ class Base(object):
     """
     __namespace__ = None
     __type_name__ = None
+    
+    # Tracks each time a model is created.  This is used to track order.
+    creation_counter = 0
 
     # There are not the xml schema defaults. The xml schema defaults are
     # considered in ClassModel's add_to_schema method. the defaults here
@@ -212,6 +215,8 @@ class SimpleType(Base):
             if retval.__type_name__ is None:
                 retval.__type_name__ = kwargs.get("type_name", Base.Empty)
 
+        retval.creation_counter = Base.creation_counter
+        Base.creation_counter += 1
         return retval
 
     @staticmethod

@@ -31,7 +31,7 @@ from lxml import etree
 from soaplib.core import namespaces
 
 from soaplib.core.model.exception import Fault
-from soaplib.core.util.odict import odict
+from soaplib.core.util.ordereddict import OrderedDict as odict
 from soaplib.core.wsdl import WSDL
 
 HTTP_500 = '500 Internal server error'
@@ -49,10 +49,10 @@ class _SchemaInfo(object):
 class _SchemaEntries(object):
     def __init__(self, app):
         self.namespaces = odict()
-        self.imports = {}
+        self.imports = odict()
         self.tns = app.get_tns()
         self.app = app
-        self.classes = {}
+        self.classes = odict()
 
     def has_class(self, cls):
         retval = False
@@ -650,7 +650,7 @@ class Application(object):
 
     tns = property(get_tns)
 
-    def __build_schema_nodes(self, schema_entries, types=None, chameleon_schema=False):
+    def __build_schema_nodes(self, schema_entries, types=None):
         """Fill individual <schema> nodes for every service that are part of
         this app.
         """
@@ -659,20 +659,18 @@ class Application(object):
         # schema_entries is a type that is based on the services, types is
         # usually None
 
-        schema_nodes = {}
+        schema_nodes = odict()
 
         for pref in schema_entries.namespaces:
-            #TODO: For building a schema this just builds the root element and
-            # currently sets the namespace.
+
             schema = self.__get_schema_node(pref, schema_nodes, types)
 
             # append import tags
             for namespace in schema_entries.imports[pref]:
-                # TODO: Examine what needs to change here to generate a chamelon style XSD
                 import_ = etree.SubElement(schema, "{%s}import"% namespaces.ns_xsd)
                 import_.set("namespace", namespace)
                 if types is None:
-                    # TODO: Examine what needs to change here to generate a chamelon style XSD
+
                     import_.set('schemaLocation', "%s.xsd" %
                                         self.get_namespace_prefix(namespace))
 
@@ -683,7 +681,7 @@ class Application(object):
             # append element tags
             for node in schema_entries.namespaces[pref].elements.values():
                 schema.append(node)
-
+        
         return schema_nodes
 
     def build_schema(self, types=None):
@@ -692,8 +690,6 @@ class Application(object):
         This is a protected method.
         """
 
-
-        #TODO: Adding support for chamelon style schema
         if types is None:
             # populate call routes
             for s in self.services:
@@ -782,16 +778,13 @@ class Application(object):
         # create schema node
         if pref not in schema_nodes:
             if types is None:
-                # TODO: Look at how this effects generating Chamelon Style NS
+
                 schema = etree.Element("{%s}schema" % namespaces.ns_xsd,
                                                         nsmap=self.nsmap)
             else:
                 schema = etree.SubElement(types, "{%s}schema" % namespaces.ns_xsd)
 
-            # TODO: Look at how this effects generating Chamelon Style NS
             schema.set("targetNamespace", self.nsmap[pref])
-
-            # TODO: Look at how this effects generating Chamelon Style NS
             schema.set("elementFormDefault", "qualified")
 
             schema_nodes[pref] = schema
