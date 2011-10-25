@@ -85,8 +85,11 @@ class BaseCase(unittest.TestCase):
     def element(self):
         element =  self.converter.to_etree()
         self.assertTrue(element)
+
+        print etree.tostring(element, pretty_print=True)
+
         tns_tag = '{%s}%s' % \
-                  (self.converter.tns, self.converter.instance.__type_name__)
+                  (self.converter.instance.get_namespace(), self.converter.instance.__type_name__)
         self.assertEquals(element.tag, tns_tag)
 
     def remove_ns(self):
@@ -94,8 +97,6 @@ class BaseCase(unittest.TestCase):
         element = self.converter.to_etree()
         self.assertFalse(element.nsmap)
 
-    def empty_ns(self):
-        self.assertRaises(AssertionError, ClassModelConverter, simple_factory(), "")
 
 
 class ModelAsRootTestCase(BaseCase):
@@ -106,29 +107,21 @@ class ModelAsRootTestCase(BaseCase):
     def test_simple_file(self):
         self.file()
 
-    def test_simple_element(self):
-        self.element()
-
     def test_complex_xml(self):
         self.xml()
 
     def test_complex_file(self):
         self.file()
 
-    def test_complex_element(self):
-        self.element()
-
     def test_strip_ns(self):
         self.remove_ns()
 
-    def test_empty_ns(self):
-        self.empty_ns()
 
 class AddedRootElementTestCase(BaseCase):
     def setUp(self):
         self.file_path = "instance.xml"
         self.converter = ClassModelConverter(
-                simple_factory(),"tns",include_parent=True, parent_tag="foo")
+                simple_factory(),"tns", parent_tag="foo")
 
     def element(self):
         element =  self.converter.to_etree()
@@ -162,27 +155,3 @@ class NillMinOccursModel(ClassModel):
     nillable_only = String(nillable=True, min_occurs=1)
     nillabl_min_occ_zero = String(nillable=True, min_occurs=0)
     min_occ_int = Integer(nillable=True, min_occurs=1)
-#
-#
-#class MinOccursTestCase(unittest.TestCase):
-#
-#    def _create_test_model(self, nill_only, nill_min):
-#        inst = NillMinOccursModel()
-#        inst.nillable_only = nill_only
-#        inst.nillabl_min_occ_zero = nill_min
-#
-#        return inst
-#
-#    def _create_cmc(self, instance):
-#        return ClassModelConverter(instance, "tns", include_ns=True)
-
-#    def test_all_none(self):
-#        instance = self._create_test_model(None, None)
-#        cmc = self._create_cmc(instance)
-#
-#        xml = cmc.to_xml()
-#        print xml
-#
-#        assert False
-
-
