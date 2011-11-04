@@ -114,7 +114,12 @@ class ClassModelMeta(type(Base)):
             if not isinstance(_type_info, TypeInfo):
                 cls_dict['_type_info'] = TypeInfo(_type_info)
 
-        return type.__new__(cls, cls_name, cls_bases, cls_dict)
+        n = type.__new__(cls, cls_name, cls_bases, cls_dict)
+
+        n.creation_counter = Base.creation_counter
+        Base.creation_counter += 1
+
+        return n
 
 class ClassModelBase(Base):
     """
