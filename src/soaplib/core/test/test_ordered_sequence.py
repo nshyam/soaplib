@@ -169,42 +169,65 @@ class TestSequenceOrder(unittest.TestCase):
 
 class CustomizedXsdTestCase(unittest.TestCase):
 
-    def setUp(self):
-        self.bar = bar_factory()
-        self.mo = ModelOpener(Bar)
-        self.xsd_doc = self.mo.get_schema_xml()
-        self.schema = lxml.etree.fromstring(self.xsd_doc)
-
     def test_root_tag(self):
-        root = self.schema.tag
+        mo = ModelOpener(Bar)
+        xsd_doc = mo.get_schema_xml()
+        schema = lxml.etree.fromstring(xsd_doc)
+        root = schema.tag
         self.assertEquals(NS_SCHEMA, root)
 
-    def test_child_order(self):
-        expected = [
-            "Faz", "Foo", "Baz", "Bar", "binding_method",
-            "binding_methodResponse", 'Faz', 'Foo', 'Baz', 'Bar',
-            'binding_method', 'binding_methodResponse'
-        ]
-        self.assertEquals(
-            expected,
-            [child.get('name') for child in self.schema.iterchildren()]
-        )
-
-    def test_faz_xsd_order(self):
-
-        faz_element = self.schema[0]
-        expected_order = ["f","a", "z"]
-        order = [child.get('name') for child in faz_element.iter(NS_ELEMENT)]
-        self.assertEquals(expected_order, order)
-
     def test_bar_xsd_order(self):
-        raise NotImplementedError
-
-    def test_baz_xsd_order(self):
-        raise NotImplementedError
+        mo = ModelOpener(Bar)
+        expected_children_order = ['b' , 'a', 'r', 'f', 'o', 'o_', 'b1', 'a2', 'r2', 'baz']
+        for i in xrange(1000):
+            bar_xsd = mo.get_schema_xml()
+            bar_schema = lxml.etree.fromstring(bar_xsd)
+            bar_xsd_children = bar_schema.xpath('/xs:schema/xs:complexType\
+                                                 [@name="Bar"]/xs:sequence/xs:element', 
+                                                 namespaces={'xs':'http://www.w3.org/2001/XMLSchema'})
+            self.assertTrue(bar_xsd_children)
+            self.assertEquals(expected_children_order, [child.get('name') for child in bar_xsd_children])
 
     def test_foo_xsd_order(self):
-        raise NotImplementedError
+        expected_children_order = ['f' , 'o', 'o_', 'faz']
+        foo = ModelOpener(Foo)
+        for i in xrange(1000):
+            foo_xsd = foo.get_schema_xml()
+            foo_schema = lxml.etree.fromstring(foo_xsd)
+            foo_xsd_children = foo_schema.xpath('/xs:schema/xs:complexType\
+                                                 [@name="Foo"]/xs:sequence/xs:element', 
+                                                 namespaces={'xs':'http://www.w3.org/2001/XMLSchema'})
+            self.assertTrue(foo_xsd_children)
+            self.assertEquals(expected_children_order, [child.get('name') for child in foo_xsd_children])
+
+    def test_faz_xsd_order(self):
+        expected_children_order = ['f' , 'a', 'z']
+        faz = ModelOpener(Faz)
+        for i in xrange(1000):
+            faz_xsd = faz.get_schema_xml()
+            faz_schema = lxml.etree.fromstring(faz_xsd)
+            faz_xsd_children = faz_schema.xpath('/xs:schema/xs:complexType\
+                                                 [@name="Faz"]/xs:sequence/xs:element', 
+                                                 namespaces={'xs':'http://www.w3.org/2001/XMLSchema'})
+            self.assertTrue(faz_xsd_children)
+            self.assertEquals(expected_children_order, [child.get('name') for child in faz_xsd_children])
+
+        #faz_element = self.schema[0]
+        #expected_order = ["f","a", "z"]
+        #order = [child.get('name') for child in faz_element.iter(NS_ELEMENT)]
+        #self.assertEquals(expected_order, order)
+
+    def test_baz_xsd_order(self):
+        expected_children_order = ['b' , 'a', 'z']
+        baz = ModelOpener(Baz)
+        for i in xrange(1000):
+            baz_xsd = baz.get_schema_xml()
+            baz_schema = lxml.etree.fromstring(baz_xsd)
+            baz_xsd_children = baz_schema.xpath('/xs:schema/xs:complexType\
+                                                 [@name="Baz"]/xs:sequence/xs:element', 
+                                                 namespaces={'xs':'http://www.w3.org/2001/XMLSchema'})
+            self.assertTrue(baz_xsd_children)
+            self.assertEquals(expected_children_order, [child.get('name') for child in baz_xsd_children])
 
 class CustomizedInstanceTestCase(unittest.TestCase):
 
@@ -216,8 +239,8 @@ class CustomizedInstanceTestCase(unittest.TestCase):
     def test_children_tag_order(self):
 
         expected = [
-            "{foo}b", "{foo}a", "{foo}r", "{foo}f", "{foo}o", "{foo}o_",
-            "{foo}b1", "{foo}a2", "{foo}r2", "{foo}baz"
+            "{bar}b", "{bar}a", "{bar}r", "{bar}f", "{bar}o", "{bar}o_",
+            "{bar}b1", "{bar}a2", "{bar}r2", "{bar}baz"
         ]
         
         self.assertEquals(
