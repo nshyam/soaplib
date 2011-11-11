@@ -67,7 +67,7 @@ def complex_factory():
     c.ms2 = mse1
 
 class Faz(ClassModel):
-    __namespace__ = "foo"
+    __namespace__ = "faz"
 
     f = Integer()
     a = Integer()
@@ -83,14 +83,14 @@ class Foo(ClassModel):
 
 
 class Baz(ClassModel):
-    __namespace__ = "foo"
+    __namespace__ = "baz"
 
     b = String()
     a = String()
     z = String()
 
 class Bar(ClassModel):
-    __namespace__ = "foo"
+    __namespace__ = "bar"
     b = Integer(nillable=False)
     a = Integer(nillable=False)
     r = Integer(nillable=False)
@@ -125,22 +125,27 @@ def bar_factory():
     b.b = "b"
     b.a = "a"
     b.r = "r"
+
     b.f = foo_factory("f")
     b.o = foo_factory("o")
     b.o_ = foo_factory("o")
+
     b.b1 = 1
     b.a2 = 2
     b.r2 = 3
 
-    baz = Baz()
-    baz.b = "b"
-    baz.a = "a"
-    baz.z = "z"
+    baz = baz_factory()
 
     b.baz = baz
 
     return b
 
+def baz_factory():
+    baz = Baz()
+    baz.b = "b"
+    baz.a = "a"
+    baz.z = "z"
+    return baz
 
 class TestSequenceOrder(unittest.TestCase):
 
@@ -185,13 +190,21 @@ class CustomizedXsdTestCase(unittest.TestCase):
             [child.get('name') for child in self.schema.iterchildren()]
         )
 
-    def test_faz_order(self):
+    def test_faz_xsd_order(self):
 
         faz_element = self.schema[0]
         expected_order = ["f","a", "z"]
         order = [child.get('name') for child in faz_element.iter(NS_ELEMENT)]
         self.assertEquals(expected_order, order)
 
+    def test_bar_xsd_order(self):
+        raise NotImplementedError
+
+    def test_baz_xsd_order(self):
+        raise NotImplementedError
+
+    def test_foo_xsd_order(self):
+        raise NotImplementedError
 
 class CustomizedInstanceTestCase(unittest.TestCase):
 
