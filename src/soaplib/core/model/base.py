@@ -181,6 +181,8 @@ class Base(object):
                 setattr(Annotations, k, v)
 
         cls_dup = type(cls.__name__, cls.__bases__, cls_dict)
+        cls_dup.creation_counter = Base.creation_counter
+        Base.creation_counter += 1
         return cls_dup
 
 class Null(Base):
