@@ -243,6 +243,7 @@ class ModelOpener(object):
         valid = model_xsd.validate(doc)
         if temp_used:
             shutil.rmtree(xsd_dir)
+            self.xsd_list = None
 
         # 5) Return a tuple containing the validation state and the log.
         return valid, model_xsd.error_log
