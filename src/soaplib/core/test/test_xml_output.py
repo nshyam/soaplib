@@ -63,6 +63,76 @@ def complex_factory():
 
 
 
+class FooMetaDataXs(ClassModel):
+
+    __namespace__ = __ns_prefix__ = "foo"
+
+    FooName      = String(max_occurs=1, min_occurs=1, nillable=False, max_len=50)
+    FooAddress   = String(max_occurs=1, min_occurs=0, nillable=False, max_len=50)
+
+
+def foo_metadata_factory():
+    foo_metadata = FooMetaDataXs()
+    foo_metadata.FooName = "Foo"
+    foo_metadata.FooAddress = "Foo-Address"
+    return foo_metadata
+
+
+class FooChildXs (ClassModel):
+    """
+    """
+    __namespace__ = __ns_prefix__ = "foo"
+
+    FooChildName      = String(max_occurs=1, min_occurs=1, nillable=False, max_len=50)
+    FooChildAddress   = String(max_occurs=1, min_occurs=0, nillable=False, max_len=50)
+
+
+def foo_child_factory_one():
+    foo_child_one = FooChildXs()
+    foo_child_one.FooChildName = "Foo-Child-one"
+    foo_child_one.FooChildAddress = "Foo-Child-Address-one"
+    return foo_child_one
+
+
+def foo_child_factory_one_invalid():
+    foo_child_one = FooChildXs()
+    foo_child_one.FooChildName = ""   #This is mandatory...here soplib is failing
+    foo_child_one.FooChildAddress = "Foo-Child-Address-one"
+    return foo_child_one
+
+
+def foo_child_factory_two():
+    foo_child_two = FooChildXs()
+    foo_child_two.FooChildName = "Foo-Child-two"
+    foo_child_two.FooChildAddress = "Foo-Child-Address-two"
+    return foo_child_two
+
+
+class FooMainXs(ClassModel):
+    """
+    """
+    __namespace__ = __ns_prefix__ = "foo"
+
+    foo_metadata_lookup = FooMetaDataXs.customize(min_occurs=1, max_occurs=1)
+    results             = FooChildXs.customize(nillable=False, min_occurs=1,
+                                               max_occurs='unbounded')
+
+    results.__namespace__ = __namespace__
+
+
+def foo_main_factory():
+    foo_main = FooMainXs()
+    foo_main.foo_metadata_lookup = foo_metadata_factory()
+    foo_main.results = [foo_child_factory_one(), foo_child_factory_two(),]
+    return foo_main
+
+
+def foo_main_factory_with_invalid_xml():
+    foo_main = FooMainXs()
+    foo_main.foo_metadata_lookup = foo_metadata_factory()
+    foo_main.results = [foo_child_factory_one_invalid(), foo_child_factory_two(),]
+    return foo_main
+
 
 class BaseCase(unittest.TestCase):
 
