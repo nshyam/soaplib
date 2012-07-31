@@ -3,7 +3,12 @@ from lxml import etree
 import unittest
 from soaplib.core.model.clazz import ClassModel
 from soaplib.core.model.primitive import String, Integer
-from soaplib.core.test.test_xml_output import complex_factory, ComplexModel, simple_factory, SimpleModel
+from soaplib.core.test.test_xml_output import (complex_factory, ComplexModel,
+                                               simple_factory, SimpleModel,
+                                               foo_metadata_factory, FooMetaDataXs,
+                                               foo_child_factory_one, foo_child_factory_two,
+                                               FooChildXs, foo_main_factory, 
+                                               foo_main_factory_with_invalid_xml, FooMainXs)
 from soaplib.core.util.model_utils import ModelOpener
 
 class NoNillable(ClassModel):
@@ -75,3 +80,39 @@ class TestValidation(unittest.TestCase):
         valid, log = opener.validate_instance(n)
         self.assertFalse(valid)
         self.assertEquals(len(log), 2)
+
+
+
+        opener = ModelOpener(ComplexModel)
+        xml_string = opener.get_instance_xml(complex_factory())
+        self.assertNotEquals(xml_string, None)
+        self.assertNotEquals(xml_string,"")
+        element = etree.fromstring(xml_string)
+
+
+    def test_validate_valid_complex_xml_against_xsd(self):
+        ns_map = {"foo":"foo"}
+        foo_main = foo_main_factory()
+        opener = ModelOpener(FooMainXs, custom_ns_map=ns_map)
+        xml_string = opener.get_instance_xml(foo_main_factory())
+        print xml_string
+
+        valid, log = opener.validate_instance(foo_main)
+        assert valid == True
+
+
+    def test_validate_invalid_complex_xml_against_xsd(self):
+        ns_map = {"foo":"foo"}
+        foo_main = foo_main_factory_with_invalid_xml()
+        opener = ModelOpener(FooMainXs, custom_ns_map=ns_map)
+        xml_string = opener.get_instance_xml(foo_main_factory_with_invalid_xml())
+        print xml_string
+
+        valid, log = opener.validate_instance(foo_main)
+        # i am assuming here it should fail here ..but its not failing
+        assert valid == False
+
+
+        
+
+
